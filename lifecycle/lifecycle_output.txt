@@ -76,7 +76,7 @@ closing brace (main) // all empty or out of scope values destoyed
   dtor (1,moved from copy of (2,o_2)#)#
 
 Removing noexcept tags from move connstructor: 
-With the noexcept tags gone out of the move functions, the containers defaulted to copying most of the constructors' params (particularly with vectors).
-
+-> With the noexcept tags gone out of the move constructor, the containers defaulted to copying most of the constructors' params (particularly with vectors).
 
 Removing move constructor w/ #if pragmas:
+-> Every previous move operation becomes a copy operation regardless of whether it's a vector or default constructor. 
