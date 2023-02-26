@@ -1,47 +1,46 @@
 ﻿MyClass o_1;
   default ctor (1,unnamed)# //default ctor MyClass() creates default instance o_1 
 MyClass o_2("o_2");
-  custom ctor (2,o_2)# //user-defined ctor creates instance with param (2, o_2) +
-						 // returns value copy elison
+  custom ctor (2,o_2)# //user-defined ctor creates instance with param (2, o_2) + returns value copy elison
 MyClass o_3 = o_2;
-  copy ctor (3,copy of (2,o_2)#)# //copy ctor
-MyClass o_4("o_4");
+  copy ctor (3,copy of (2,o_2)#)# // copy ctor into o_3 from o_2
+MyClass o_4("o_4"); // o_4 instance is created with m_uid & m_name params
   custom ctor (4,o_4)#
-o_4 = o_1;
+o_4 = o_1; // o_4 instance is set to o_1, copying o_1 into o_4
   copy assign (4,o_4)# from (1,unnamed)#
-MyClass o_5(move(o_1));
+MyClass o_5(move(o_1)); // o_5 instance is moved from default instance o_1
   move ctor (5,moved from unnamed)#
-o_1 = move(o_3);
-  move assign (1,stolen)# from (3,copy of (2,o_2)#)#
-MyClass o_6 = make_new_object_good();
-  custom ctor (6,x)#
+o_1 = move(o_3); // o_1 is moved from o_3, so o_1 now has o_3 uid and name
+  move assign (1,stolen)# from (3,copy of (2,o_2)#)#  // o_3 was previously a copy of o_2, now those params are moved to o_1 - making o_3 empty
+MyClass o_6 = make_new_object_good(); 
+  custom ctor (6,x)#   // custom cstor created using make_new_object_good() with uid = 6, name = x
 MyClass o_7 = make_new_object_bad();
-  custom ctor (7,y)#
-  move ctor (8,moved from y)#
-  dtor (7,stolen)#
+  custom ctor (7,y)# // custom cstor created w/ (7, y) params
+  move ctor (8,moved from y)# // moved to 8
+  dtor (7,stolen)# //custom ctor 7 deleted since it was moved to 8
 open brace (vectors)
 vector<MyClass> v_1;
-v_1.emplace_back("v_1[0]");
-  custom ctor (9,v_1[0])#
-v_1.push_back(MyClass("v_1[1]"));
-  custom ctor (10,v_1[1])#
-  move ctor (11,moved from v_1[1])#
-  move ctor (12,moved from v_1[0])#
-  dtor (9,stolen)#
-  dtor (10,stolen)#
-v_1.emplace_back(MyClass("v_1[2]"));
-  custom ctor (13,v_1[2])#
-  move ctor (14,moved from v_1[2])#
-  move ctor (15,moved from moved from v_1[0])#
-  move ctor (16,moved from moved from v_1[1])#
-  dtor (12,stolen)#
-  dtor (11,stolen)#
-  dtor (13,stolen)#
-vector<MyClass> v_2 = v_1;
-  copy ctor (17,copy of (15,moved from moved from v_1[0])#)#
-  copy ctor (18,copy of (16,moved from moved from v_1[1])#)#
-  copy ctor (19,copy of (14,moved from v_1[2])#)#
-vector<MyClass> v_3 = move(v_1);
+v_1.emplace_back("v_1[0]"); // insert to the back elem in 0 index
+  custom ctor (9,v_1[0])# //custom ctor created with uid 9 and name of 0th elem
+v_1.push_back(MyClass("v_1[1]")); // pushed back elem in 1 index
+  custom ctor (10,v_1[1])# // given uid 10 and name of elem in 1 index
+  move ctor (11,moved from v_1[1])# // custom ctor w/ uid = 10 moved to uid 11
+  move ctor (12,moved from v_1[0])# // uid 9 moved to 12
+  dtor (9,stolen)# // v_1[0] prev value destroyed after being moved
+  dtor (10,stolen)# // v_1[1] prev values destroyed after being moved
+v_1.emplace_back(MyClass("v_1[2]")); 
+  custom ctor (13,v_1[2])# // custom ctor v_1[2] created w/ uid 13
+  move ctor (14,moved from v_1[2])# //v_1[2] moved to 14 uid
+  move ctor (15,moved from moved from v_1[0])# // v_1[0] moved to uid 15
+  move ctor (16,moved from moved from v_1[1])# // v_1[1] moved to uid 16
+  dtor (12,stolen)# // prev value destoryed 
+  dtor (11,stolen)# // prev value destroyed
+  dtor (13,stolen)# // prev value destroyed
+vector<MyClass> v_2 = v_1; // v_1 moved to v_2 
+  copy ctor (17,copy of (15,moved from moved from v_1[0])#)# // v_1[0] copied to uid 17 in v_2(3 moves)
+  copy ctor (18,copy of (16,moved from moved from v_1[1])#)# // v_1[1] copied to 18 (3 moves)
+  copy ctor (19,copy of (14,moved from v_1[2])#)# // v_1[2] copied to 19 (2 moves)
+vector<MyClass> v_3 = move(v_1); // entire v_1 vector moved to v_3, so all prev values destroyed 
 closing brace (vectors)
   dtor (15,moved from moved from v_1[0])#
   dtor (16,moved from moved from v_1[1])#
@@ -50,24 +49,24 @@ closing brace (vectors)
   dtor (18,copy of (16,moved from moved from v_1[1])#)#
   dtor (19,copy of (14,moved from v_1[2])#)#
 opening brace (pointers)
-auto up_1 = make_unique<MyClass>("u_1");
-  custom ctor (20,u_1)#
-auto sp_1 = make_shared<MyClass>("s_1");
-  custom ctor (21,s_1)#
+auto up_1 = make_unique<MyClass>("u_1"); // pointer u_1 created 
+  custom ctor (20,u_1)# //given name u_1, uid 20 
+auto sp_1 = make_shared<MyClass>("s_1"); // pointer s_1 created
+  custom ctor (21,s_1)# //custom cstor given s_1 params
 opening brace (inner pointers)
-auto up_2 = make_unique<MyClass>("u_2");
-  custom ctor (22,u_2)#
-auto up_3 = move(up_1);
-auto sp_2 = make_shared<MyClass>("s_2");
-  custom ctor (23,s_2)#
+auto up_2 = make_unique<MyClass>("u_2"); // pointer u_2 created
+  custom ctor (22,u_2)# // cstor named u_2, with 22 uid 
+auto up_3 = move(up_1); // up_1 is moved to up_3
+auto sp_2 = make_shared<MyClass>("s_2"); // pointer s_2 created
+  custom ctor (23,s_2)# // custom cstor given s_2 params
 sp_1 = sp_2;
-  dtor (21,s_1)#
+  dtor (21,s_1)# // destructor destroys sp_1 since it was assigned to sp_2
 closing brace (inner pointers)
-  dtor (20,u_1)#
-  dtor (22,u_2)#
+  dtor (20,u_1)# // u_1 values destoryed since it was moved to u_3
+  dtor (22,u_2)# // u_2 destroyed  
 closing brace (pointers)
-  dtor (23,s_2)#
-closing brace (main)
+  dtor (23,s_2)# // s_2 destroyed
+closing brace (main) // all empty or out of scope values destoyed 
   dtor (8,moved from y)#
   dtor (6,x)#
   dtor (5,moved from unnamed)#
@@ -75,3 +74,9 @@ closing brace (main)
   dtor (3,stolen)#
   dtor (2,o_2)#
   dtor (1,moved from copy of (2,o_2)#)#
+
+Removing noexcept tags from move connstructor: 
+With the noexcept tags gone out of the move functions, the containers defaulted to copying most of the constructors' params (particularly with vectors).
+
+
+Removing move constructor w/ #if pragmas:
